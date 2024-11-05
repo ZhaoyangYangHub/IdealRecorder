@@ -4,24 +4,23 @@ import android.content.DialogInterface;
 import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.yanzhenjie.permission.AndPermission;
-import com.yanzhenjie.permission.Permission;
-import com.yanzhenjie.permission.PermissionListener;
-import com.yanzhenjie.permission.Rationale;
-import com.yanzhenjie.permission.RationaleListener;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.blankj.utilcode.constant.PermissionConstants;
+import com.blankj.utilcode.util.PermissionUtils;
+import com.blankj.utilcode.util.UtilsTransActivity;
 
 import java.io.File;
 import java.util.List;
 
-import jaygoo.widget.wlv.WaveLineView;
 import tech.oom.idealrecorder.IdealRecorder;
 import tech.oom.idealrecorder.StatusListener;
 import tech.oom.idealrecorder.utils.Log;
@@ -31,38 +30,17 @@ public class MainActivity extends AppCompatActivity {
 
     private Button recordBtn;
     private WaveView waveView;
-    private WaveLineView waveLineView;
+//    private WaveLineView waveLineView;
     private TextView tips;
 
     private IdealRecorder idealRecorder;
 
     private IdealRecorder.RecordConfig recordConfig;
 
-    private RationaleListener rationaleListener = new RationaleListener() {
-        @Override
-        public void showRequestPermissionRationale(int requestCode, final Rationale rationale) {
-            com.yanzhenjie.alertdialog.AlertDialog.newBuilder(MainActivity.this)
-                    .setTitle("友好提醒")
-                    .setMessage("录制声音保存录音需要录音和读取文件相关权限哦，爱给不给")
-                    .setPositiveButton("好，给你", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            rationale.resume();
-                        }
-                    }).setNegativeButton("我是拒绝的", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    rationale.cancel();
-                }
-            }).create().show();
-        }
-    };
-
-
     private StatusListener statusListener = new StatusListener() {
         @Override
         public void onStartRecording() {
-            waveLineView.startAnim();
+//            waveLineView.startAnim();
             tips.setText("开始录音");
         }
 
@@ -78,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onVoiceVolume(int volume) {
             double myVolume = (volume - 40) * 4;
-            waveLineView.setVolume((int) myVolume);
+//            waveLineView.setVolume((int) myVolume);
             Log.d("MainActivity", "current volume is " + volume);
         }
 
@@ -100,33 +78,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onStopRecording() {
             tips.setText("录音结束");
-            waveLineView.stopAnim();
+//            waveLineView.stopAnim();
         }
     };
-
-
-    private PermissionListener listener = new PermissionListener() {
-        @Override
-        public void onSucceed(int requestCode, List<String> grantedPermissions) {
-
-            if (requestCode == 100) {
-                record();
-            }
-        }
-
-        @Override
-        public void onFailed(int requestCode, List<String> deniedPermissions) {
-            // 权限申请失败回调。
-            if (requestCode == 100) {
-                Toast.makeText(MainActivity.this, "没有录音和文件读取权限，你自己看着办", Toast.LENGTH_SHORT).show();
-            }
-            if (AndPermission.hasAlwaysDeniedPermission(MainActivity.this, deniedPermissions)) {
-                AndPermission.defaultSettingDialog(MainActivity.this, 300).show();
-            }
-        }
-
-    };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         recordBtn = (Button) findViewById(R.id.register_record_btn);
         waveView = (WaveView) findViewById(R.id.wave_view);
-        waveLineView = (WaveLineView) findViewById(R.id.waveLineView);
+//        waveLineView = (WaveLineView) findViewById(R.id.waveLineView);
         tips = (TextView) findViewById(R.id.tips);
         idealRecorder = IdealRecorder.getInstance();
         recordBtn.setOnLongClickListener(new View.OnLongClickListener() {
@@ -165,12 +119,40 @@ public class MainActivity extends AppCompatActivity {
      * 准备录音 录音之前 先判断是否有相关权限
      */
     private void readyRecord() {
+        if (PermissionUtils.isGranted(PermissionConstants.MICROPHONE, PermissionConstants.STORAGE)) {
+            record();
+        } else {
+            PermissionUtils.permission(PermissionConstants.MICROPHONE, PermissionConstants.STORAGE)
+                    .rationale(new PermissionUtils.OnRationaleListener() {
+                        @Override
+                        public void rationale(@NonNull UtilsTransActivity activity, @NonNull ShouldRequest shouldRequest) {
+                            new AlertDialog.Builder(activity)
+                                    .setTitle("友好提醒")
+                                    .setMessage("录制声音保存录音需要录音和读取文件相关权限哦，爱给不给")
+                                    .setPositiveButton("好，给你", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            shouldRequest.again(true);
+                                        }
+                                    }).setNegativeButton("我是拒绝的", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            shouldRequest.again(false);
+                                        }
+                                    }).create().show();
+                        }
+                    })
+                    .callback(new PermissionUtils.SimpleCallback() {
+                        @Override
+                        public void onGranted() {
+                        }
 
-        AndPermission.with(this)
-                .requestCode(100)
-                .permission(Permission.MICROPHONE, Permission.STORAGE)
-                .rationale(rationaleListener).callback(listener).start();
-
+                        @Override
+                        public void onDenied() {
+                            Toast.makeText(MainActivity.this, "没有录音和文件读取权限，你自己看着办", Toast.LENGTH_SHORT).show();
+                        }
+                    }).request();
+        }
     }
 
     /**
@@ -194,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
      * @return
      */
     private String getSaveFilePath() {
-        File file = new File(Environment.getExternalStorageDirectory(), "Audio");
+        File file = new File(getExternalCacheDir(), "Audio");
         if (!file.exists()) {
             file.mkdirs();
         }

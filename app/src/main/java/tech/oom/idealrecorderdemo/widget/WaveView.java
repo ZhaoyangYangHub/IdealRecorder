@@ -5,10 +5,11 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 
+
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
@@ -17,7 +18,6 @@ import tech.oom.idealrecorderdemo.R;
 /**
  * Created by issuser on 2017/6/22 0022.
  */
-
 public class WaveView extends View {
     private ArrayList<Short> datas = new ArrayList<>();
     private short max = 300;

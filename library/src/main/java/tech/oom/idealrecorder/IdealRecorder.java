@@ -6,8 +6,9 @@ import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+
+import androidx.core.content.ContextCompat;
 
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.atomic.AtomicBoolean;

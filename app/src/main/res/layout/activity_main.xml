@@ -14,21 +14,21 @@
         app:waveColor="@color/green"
         app:waveStokeWidth="1dp" />
 
-    <jaygoo.widget.wlv.WaveLineView
-        android:id="@+id/waveLineView"
-        android:layout_width="match_parent"
-        android:layout_height="160dp"
-        android:layout_below="@+id/wave_view"
-        app:wlvBackgroundColor="@color/transparent"
-        app:wlvLineColor="@color/green"
-        app:wlvMoveSpeed="290"
-        app:wlvSensibility="9" />
+<!--    <jaygoo.widget.wlv.WaveLineView-->
+<!--        android:id="@+id/waveLineView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="160dp"-->
+<!--        android:layout_below="@+id/wave_view"-->
+<!--        app:wlvBackgroundColor="@color/transparent"-->
+<!--        app:wlvLineColor="@color/green"-->
+<!--        app:wlvMoveSpeed="290"-->
+<!--        app:wlvSensibility="9" />-->
 
     <TextView
         android:id="@+id/tips"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/waveLineView"
+        android:layout_below="@id/wave_view"
         android:gravity="center"
         android:textColor="@color/green"
         android:textSize="30sp" />
